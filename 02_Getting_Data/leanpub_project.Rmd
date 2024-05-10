@@ -1,0 +1,170 @@
+---
+title: "Getting Data Project"
+author: "Tommy Angel"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Getting Data Project
+
+## Objectives for this project
+
+To complete this project you’ll need to do a few things within this file. As you go through the notebook, you will have further instruction on how to complete these objectives.
+
+Be sure [you have followed the steps described in the previous chapter](https://datatrail-jhu.github.io/DataTrail/google-documents.html) and have your Googlesheet with Leanpub data prepared and ready.
+
+1. Go through this notebook, reading along.
+
+2. Fill in empty or incomplete code chunks when prompted to do so.
+
+3. Run each code chunk as you come across it by clicking the tiny green triangles at the right of each chunk. You should see the code chunks print out various output when you do this.
+
+4. At the very top of this file, put your own name in the `author:` place. Currently it says `"DataTrail Team"`. Be sure to put your name in quotes.
+
+5. In the `Conclusions` section, write up responses to each of these questions posed here.
+
+6. When you are satisfied with what you've written and added to this document you'll need to save it. In the menu, go to `File` > `Save`. Now the `nb.html` output resulting file will have your new output saved to it.
+
+7. Open up the resulting `leanpub_project.nb.html` file and click `View in Web Browser`. Does it look good to you? Did all the changes appear here as you expected.
+
+8. Upload your `Rmd` and your `nb.html` to your assignment folder (this is something that will be dependent on what your instructors have told you -- or if you are taking this on your own, just collect these projects in one spot, preferably a Google Drive)!
+
+7. Pat yourself on the back for finishing this project!
+
+## The goal of this analysis
+
+How does the price of a bestselling book relate to how much the author is charging for that book?
+
+## Set up
+
+We are going to use this R package (we'll talk more about package in a later chapter).
+
+```{r}
+library(readr)
+library(magrittr)
+library(googlesheets4)
+library(dplyr)
+library(ggplot2)
+```
+
+## Set up directories
+
+Here we are going to make a data directory if it doesn't already exist.
+
+```{r}
+if (!dir.exists("data")) {
+  dir.create("data")
+}
+```
+
+## Getting the data
+
+Here we are reading in a Google spreadsheet with information about leanpub books and their prices. We will read this data in using the googlesheets4 R package.
+
+Assign the URL of your leanpub googlesheet the name `link` and make sure to put quotes around it. Copy and paste it from GoogleSheets exactly.
+
+```{r, solution = TRUE}
+# Paste your URL to your googlesheet below! Make sure to put quotes around it
+### Your code here
+library(readr)
+leanpub_df <- read_csv("LeanPub_Data - Sheet1.csv")
+```
+
+So we have a snapshot of what this data look like at the time that we ran this analysis (and for easier sharing purposes), let's use the `readr::write_csv()` function to write this to a file.
+
+Save this file to the `data` directory that we created. And name the file `leanpub_data.csv`. If you don't remember how to use the `readr::write_csv()` function, recall you can look it up using `?readr::write_csv`.
+
+Hint: Look at this chapter for more information on this step: https://datatrail-jhu.github.io/DataTrail/basic-commands-in-r.html#what-is-this-object
+
+```{r, solution = TRUE}
+### Your code here
+write_csv(leanpub_df,"data/leanpub_data.csv")
+```
+
+## Explore the data
+
+Use some of the functions you learned to investigate your `leanpub_df`. How many dimensions is it?
+
+```{r, solution = TRUE}
+### Your code here
+dim(leanpub_df)
+```
+
+What kind of class object is it?
+
+```{r, solution = TRUE}
+### Your code here
+class(leanpub_df)
+```
+
+## Cleaning the data
+
+For the upcoming code, we will need to make sure that we have columns named *exactly* `title`, `readers`, `suggested` and `minimum`.
+
+```{r}
+# If all four of our required columns are found, then this will print out TRUE
+all(c('title', 'readers', 'suggested', 'minimum') %in% colnames(leanpub_df))
+```
+
+If the above prints out false, you may want to return to your Googlesheets, rename the columns accordingly and start from the top of this notebook again.
+
+This code will clean your data for you.
+
+```{r}
+leanpub_df <- leanpub_df %>%
+  mutate_at(dplyr::vars(Readers, Suggested, Minimum), as.numeric)
+```
+
+Now that the data are being treated as numeric values properly, we can obtain some summary statistics for your `leanpub_df` dataset. Use a function we have discussed to do this.
+
+```{r, solution = TRUE}
+### Your code here
+summary(leanpub_df)
+```
+
+## Plotting the data
+
+To investigate our question, we will want to investigate any potential relationship between the number of readers for a book and the suggested price. We will plot these data in the form of a scatterplot. In upcoming chapters we will go into more detail about how to make plots yourself.  
+
+```{r}
+ggplot(leanpub_df, aes(Readers, Suggested)) +
+  geom_point(color = "blue") +
+  theme_minimal()
+```
+
+## Get the stats
+
+Is there a relationship between `readers` and `suggested` price? We can also use a correlation to ask this question.
+
+```{r}
+cor.test(leanpub_df$Readers, leanpub_df$Suggested)
+```
+If the p value reported is very very small, then there might be a relationship. But also it is likely you'll need to collect more data to get a more confident conclusion using this test.
+
+### Conclusion
+
+Write up your thoughts about this data science project here and answer the following questions:
+
+- What did we find out about our questions?
+- How did we explore our questions?
+- What did our explorations show us?
+- What follow up data science questions arise for you regarding this candy dataset now that we've explored it some?
+
+  We found that our p-value was 0.5383 which is much greater than 0.05, which means that there does not appear to be a strong correlation between the price of a bestselling book and the author's pricing strategy.
+  
+  We explored the data by looking at the relationship within a graph and then by using a code to find the correlation values relating to the analyses. These explorations showed up that there doesn't seem to be any relationship between book prices and the author's pricing strategies. A key exploration was the graphical model as it showed the small cluster of points near (0,25) which further tells us that there's no specific relationship.
+  
+  Some follow up data science questions that arises regarding the dataset are:
+  - Could the fact that some of the books didn't show how many readers it had have affected the way our explorations came out to be?
+  - Would more data provide an actual relationship?
+  
+
+## Print out session info
+
+Session info is a good thing to print out at the end of your notebooks so that you (and other folks) referencing your notebooks know what software versions and libraries you used to run the notebook.
+
+```{r}
+sessionInfo()
+```
